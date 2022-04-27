@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        .calendar-wrapper {
+            max-width: 280px;
+            font: 100% system-ui;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .first-day {
+            grid-column-start: 3;
+        }
+
+        .day-name {
+            background: #eee;
+        }
+
+        h1 {
+            text-align: center;
+        }
+        ol {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        li {
+            padding: 2px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+<div id="app">
+
+
+    <div class="calendar-wrapper">
+        <h1>December 2020</h1>
+        <ol class="calendar">
+
+            <li class="day-name">Sun</li>
+            <li class="day-name">Mon</li>
+            <li class="day-name">Tue</li>
+            <li class="day-name">Wed</li>
+            <li class="day-name">Thu</li>
+            <li class="day-name">Fri</li>
+            <li class="day-name">Sat</li>
+            <li v-for="(day,index) in days" v-bind:class="day.class" @click="dayChoose(index)">
+                {{day.date | showDayOnly}}
+            </li>
+
+        </ol>
+    </div>
+
+    <ul>
+        <li v-for="(jobInfo, index) in jobsInfo">
+            <input :value="jobInfo.name" @keyup.enter="jobUpdate($event, jobInfo.id,index)">
+            <input type="checkbox" v-model="jobInfo.done">
+            <button @click="jobDelete(jobInfo.id, index)">remove</button>
+        </li>
+        <li v-if="dateChosen >= 0">
+            <input type="text" @keyup.enter="jobAdd()" v-model="jobNewText">
+        </li>
+    </ul>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+<script>
+
+
+    let app = new Vue({
+        el: '#app',
+        data: {
+
+            days: [
+                {
+                    date: '2022-02-01',
+                    class: 'first-day',
+                },
+                {date:'2022-02-02'},
+                {date:'2022-02-03'},
+                {date:'2022-02-04'},
+                {date:'2022-02-05'},
+                {date:'2022-02-06'},
+                {date:'2022-02-07'},
+                {date:'2022-02-08'},
+                {date:'2022-02-09'},
+                {date:'2022-02-10'},
+                {date:'2022-02-11'},
+                {date:'2022-02-12'},
+            ],
+            dateChosen: -1,
+
+            jobs: [
+                {   id: '1',
+                    name: 'test1',
+                    date: '2022-02-01',
+                    done: true,
+                },
+                {   id: '2',
+                    name: 'test2',
+                    date: '2022-02-01'
+                },
+                {   id:'3',
+                    name: 'test3',
+                    date: '2022-02-02'
+                },
+
+
+            ],
+
+            jobsInfo: [],
+            jobNewText: '',
+
+
+        },
+        methods: {
+            dayChoose: function(index) {
+            this.dateChosen = index;
+            this.showJobs(index);
+            },
+
+            showJobs: function(index) {
+
+                this.jobsInfo= this.jobs.filter(function(elem) {
+                    if(elem['date'] == app.days[index].date) {
+                        return 1;
+                    }
+                });
+            },
+
+            jobDelete: function(id, indexScope) {
+                this.jobsInfo.splice(indexScope,1);
+                this.jobs.splice(this.jobFindById(id),1);
+            },
+
+            jobUpdate: function(e, id, indexScope) {
+                this.jobsInfo[indexScope].name = e.target.value;
+                this.jobs[this.jobFindById(id)].name = e.target.value;
+            },
+
+
+            jobFindById: function(id) {
+                let jobIndex = this.jobs.findIndex(function(job,index){
+                    if(job.id == id) {
+                        return 1;
+                    }
+                });
+                console.log(jobIndex);
+                return jobIndex;
+            },
+            jobAdd: function() {
+                let jobNew = {
+                    name : this.jobNewText,
+                    date : this.days[this.dateChosen].date,
+                        id : this.getNewId(),
+                };
+                this.jobs.push(jobNew);
+                this.jobsInfo.push(jobNew);
+
+            },
+            getNewId: function(){
+                const ids = this.jobs.map(job => {
+                    return parseInt(job.id);
+                });
+                let newId = Math.max.apply(null,ids) + 1;
+                    return newId;
+            }
+        },
+        filters: {
+            showDayOnly: function(date) {
+                let temp = date.split('-');
+                return temp[2];
+            },
+        }
+    });
+
+</script>
+
+
+
+</body>
+</html>
